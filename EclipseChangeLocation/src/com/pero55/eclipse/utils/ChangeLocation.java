@@ -9,8 +9,7 @@ import java.nio.file.Files;
 import java.util.logging.Logger;
 
 /***
- * The class collects details in order to generate a new .location file
- * Based
+ * The class collects details in order to generate a new .location file Based
  * 
  * @author Pero55
  *
@@ -32,8 +31,16 @@ public class ChangeLocation {
 	private int fileOldContentSize;
 	private int fileNewContentSize;
 
+	public ChangeLocation() {
+		super();
+	}
+
 	public ChangeLocation(String sourceLocation, String newPathProject) throws IOException {
 		this.setSourceLocation(sourceLocation);
+		File f = new File(this.getSourceLocation());
+		if ((!f.exists()) || (f.isDirectory())) {
+			throw new IOException("File specified do not exist!");
+		}
 		this.setFileToWrite(newPathProject);
 		this.setNewPathProject(PRE_PATH + newPathProject);
 		setProperties();
@@ -53,6 +60,26 @@ public class ChangeLocation {
 
 	public void setNewPathProject(String newPathProject) {
 		this.newEclipsePathProject = newPathProject;
+	}
+
+	protected static ChangeLocation getInstance(String[] args) throws IOException {
+
+		String locationPathFile = null;
+		String newLocationEclipseProject = null;
+		ChangeLocation c = null;
+		if ((args != null) && (args.length > 0) && args.length == 4) {
+			for (int i = 0; i < args.length; i++) {
+				if ((args[i].equalsIgnoreCase(Executable.ARG1)) && (args[(i + 1)] != null)) {
+					locationPathFile = args[(i + 1)];
+				} else if ((args[i].equalsIgnoreCase(Executable.ARG2)) && (args[(i + 1)] != null)) {
+					newLocationEclipseProject = args[(i + 1)];
+				}
+			}
+		}
+		if (locationPathFile != null && newLocationEclipseProject != null) {
+			c = new ChangeLocation(locationPathFile, newLocationEclipseProject);
+		}
+		return c;
 	}
 
 	/**
@@ -115,7 +142,7 @@ public class ChangeLocation {
 
 		try {
 
-			//URI uri = new URI(getNewPathProject());
+			// URI uri = new URI(getNewPathProject());
 			File fileInput = new File(getSourceLocation()); // Read
 			byte[] fileOriContent = Files.readAllBytes(fileInput.toPath());
 			byte[] fileNewContent = new byte[fileNewContentSize];
@@ -150,7 +177,6 @@ public class ChangeLocation {
 		}
 		return Ret;
 	}
-
 
 	/***
 	 * byte Write method
